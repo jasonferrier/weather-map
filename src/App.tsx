@@ -47,16 +47,16 @@ function App() {
       console.log("map moved");
     });
 
-    mapRef.current?.on("mousedown", (stuff) => {
+    mapRef.current?.on("mousedown", (event) => {
       setShowPopup(false);
       setMarker({ ...marker, show: false });
     });
-    mapRef.current?.on("click", (stuff) => {
-      console.log(`clicked at ${stuff.lngLat.lat}, ${stuff.lngLat.lng}`);
+    mapRef.current?.on("click", (event) => {
+      console.log(`clicked at ${event.lngLat.lat}, ${event.lngLat.lng}`);
       setMarker({
         position: {
-          lat: stuff.lngLat.lat,
-          lng: stuff.lngLat.lng,
+          lat: event.lngLat.lat,
+          lng: event.lngLat.lng,
         },
         show: true,
       });
@@ -69,7 +69,7 @@ function App() {
       <div className="location-wrapper">
         <div className="location-input">
           <label htmlFor="coordinates">Coordinates:</label>
-          {/* TODO: Set value to "stuff.lngLat.lat, stuff.lngLat.lng" */}
+          {/* TODO: Set value to "event.lngLat.lat, event.lngLat.lng" */}
           <input autoFocus type="text" id="coordinates" name="coordinates" />
         </div>
         <div className="map-location">LIVE COORDINATES GO HERE</div>
