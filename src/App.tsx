@@ -149,6 +149,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
 };
 
 function App() {
+  // Prevent the map from reloading when the user interacts with the map
   const mapRef = useRef<MapRef | null>(null);
 
   const [viewState, setViewState] = useState<ViewState>({
@@ -220,6 +221,32 @@ function App() {
   };
 
   const onMapLoad = useCallback(() => {
+    // Add topo lines to map
+    mapRef.current
+      ?.getMap()
+      .addSource("mapbox-terrain", {
+        type: "vector",
+        url: "mapbox://mapbox.mapbox-terrain-v2",
+      })
+
+      .addLayer({
+        id: "terrain-data",
+        type: "line",
+        source: "mapbox-terrain",
+        "source-layer": "contour",
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#ff69b4",
+          "line-width": 1,
+        },
+        // Only display contours above 3048m // 10,000ft
+        filter: [">=", ["get", "ele"], 3048],
+      });
+    // });
+
     mapRef.current?.on("moveend", () => {
       // TODO: Fix when user closes popup with X and then pans the map, the popup reappears
       // Re-show popup when user is done panning the map
@@ -288,7 +315,7 @@ function App() {
         onMove={(evt) => setViewState(evt.viewState)}
         onLoad={onMapLoad}
         pitchWithRotate={false}
-        mapStyle="mapbox://styles/mapbox/outdoors-v11"
+        mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={mapboxAccessToken}
       >
         <FullscreenControl />
