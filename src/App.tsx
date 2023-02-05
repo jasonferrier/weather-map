@@ -90,11 +90,12 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
   const { latitude, longitude } = props;
   const [weatherData, setWeatherData] =
     useState<Partial<weatherDataType> | null>(null);
+  const [weatherIcon, setWeatherIcon] = useState<string | undefined>();
 
   // TODO: This is firing off TWO API calls.
   useEffect(() => {
     getWeatherAtLocation(longitude, latitude);
-    console.log(`querying OpenWeather API @ ${latitude}, ${longitude}`);
+    // console.log(`querying OpenWeather API @ ${latitude}, ${longitude}`);
     [];
   }, []);
 
@@ -108,9 +109,18 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
         return response;
       })
       .then((response) => response.json())
-      .then((weather) => {
-        console.log(weather);
-        setWeatherData(weather);
+      .then((weatherData: weatherDataType) => {
+        // console.log(weatherData);
+        setWeatherData(weatherData);
+
+        const icon = weatherData.weather[0]?.icon || null;
+        if (icon) {
+          // setWeatherIcon(`http://openweathermap.org/img/wn/${icon}@2x.png`); // "Retina"
+          setWeatherIcon(`http://openweathermap.org/img/wn/${icon}.png`);
+        } else {
+          // setWeatherIcon("./public/question-mark@2x.png"); // "Retina"
+          setWeatherIcon("./public/question-mark.png");
+        }
       });
   };
 
@@ -123,6 +133,10 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
           <table>
             <tbody>
               <tr>
+                {/* <td className="icon@2x"> */}
+                <td className="icon">
+                  <img src={weatherIcon} />
+                </td>
                 <td>Temp (˚F)</td>
                 <td>{weatherData?.main?.temp || "no data"}</td>
               </tr>
@@ -153,9 +167,6 @@ function App() {
   });
 
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const [popupHtml, setPopupHtml] = useState<string>(
-    "<p style='color: \"#333333\"'>Loading weather…</p>"
-  );
 
   const [marker, setMarker] = useState<Marker>({
     position: null,
@@ -185,13 +196,6 @@ function App() {
     }
   };
 
-  const isValidLngLatValues = (lng: number, lat: number): boolean => {
-    if (createLngLat(lng, lat)) {
-      return true;
-    }
-    return false;
-  };
-
   const handleLocationInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     // update input state
     setLocationInputValue(e.target.value);
@@ -217,6 +221,7 @@ function App() {
 
   const onMapLoad = useCallback(() => {
     mapRef.current?.on("moveend", () => {
+      // TODO: Fix when user closes popup with X and then pans the map, the popup reappears
       // Re-show popup when user is done panning the map
       setShowPopup(true);
     });
