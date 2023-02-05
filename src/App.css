@@ -1,4 +1,5 @@
 #root {
+  color: #333333;
   max-width: 1280px;
   margin: 0 auto;
   /* padding: 2rem; */
@@ -11,6 +12,7 @@
 }
 
 .location-wrapper {
+  color: #cccccc;
   background-color: #333333;
   position: absolute;
   top: 0;
