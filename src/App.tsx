@@ -197,6 +197,21 @@ function App() {
     }
   };
 
+  const [displayTerrainLayer, setDisplayTerrainLayer] =
+    useState<boolean>(false);
+  const handleDisplayTerrain = (e: ChangeEvent<HTMLInputElement>) => {
+    setDisplayTerrainLayer(!displayTerrainLayer);
+    if (!displayTerrainLayer) {
+      mapRef.current
+        ?.getMap()
+        .setLayoutProperty("contours", "visibility", "visible");
+    } else {
+      mapRef.current
+        ?.getMap()
+        .setLayoutProperty("contours", "visibility", "none");
+    }
+  };
+
   const handleLocationInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     // update input state
     setLocationInputValue(e.target.value);
@@ -224,19 +239,20 @@ function App() {
     // Add topo lines to map
     mapRef.current
       ?.getMap()
-      .addSource("mapbox-terrain", {
+      .addSource("contours", {
         type: "vector",
         url: "mapbox://mapbox.mapbox-terrain-v2",
       })
 
       .addLayer({
-        id: "terrain-data",
+        id: "contours",
         type: "line",
-        source: "mapbox-terrain",
+        source: "contours",
         "source-layer": "contour",
         layout: {
           "line-join": "round",
           "line-cap": "round",
+          visibility: "none", // Initially do not display the contours
         },
         paint: {
           "line-color": "#ff69b4",
@@ -245,8 +261,6 @@ function App() {
         // Only display contours above 3048m // 10,000ft
         filter: [">=", ["get", "ele"], 3048],
       });
-    // });
-
     mapRef.current?.on("moveend", () => {
       // TODO: Fix when user closes popup with X and then pans the map, the popup reappears
       // Re-show popup when user is done panning the map
@@ -278,7 +292,18 @@ function App() {
   // TODO: Fix HTML, add styles, reposition/fix map controls & map size.
   return (
     <div className="App">
-      <div className="location-wrapper">
+      <div className="header">
+        <div className="layer-wrapper">
+          <label htmlFor="displayTerrain">
+            Display topo above 10,000 feet?
+          </label>
+          <input
+            type="checkbox"
+            id="displayTerrain"
+            name="displayTerrain"
+            onChange={handleDisplayTerrain}
+          />
+        </div>
         <div className="location-input">
           <label htmlFor="coordinates">Location:</label>
           {/* Ensure that this input is a controlled component that, when changed, remove the marker & popup until Enter or (new) submit Button is pressed */}
