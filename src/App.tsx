@@ -126,7 +126,17 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
 
   return (
     <div className="weather-wrapper">
-      {!weatherData && <p>Loading weather data…</p>}
+      {!weatherData && (
+        <div className="loading">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading weather data</p>
+        </div>
+      )}
       {weatherData && (
         <>
           <p>Weather for this location is currently</p>
@@ -291,7 +301,7 @@ function App() {
 
   // TODO: Fix HTML, add styles, reposition/fix map controls & map size.
   return (
-    <div className="App">
+    <div className="App container-fluid">
       <div className="header">
         <div className="layer-wrapper">
           <label htmlFor="displayTerrain">
