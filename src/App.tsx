@@ -139,19 +139,50 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
       )}
       {weatherData && (
         <>
-          <p>Weather for this location is currently</p>
-          <table>
-            <tbody>
-              <tr>
-                {/* <td className="icon@2x"> */}
-                <td className="icon">
-                  <img src={weatherIcon} />
-                </td>
-                <td>Temp (˚F)</td>
-                <td>{weatherData?.main?.temp || "no data"}</td>
-              </tr>
-            </tbody>
-          </table>
+          <img src={weatherIcon} />
+          {weatherData.weather && weatherData.weather[0].description && (
+            <p className="description">{weatherData.weather[0].description}</p>
+          )}
+          {weatherData?.main?.temp && (
+            <div className="temperature">
+              <p>
+                Actual{" "}
+                <span className="data">
+                  {weatherData.main.temp.toFixed(1)} ˚F
+                </span>
+              </p>
+              {weatherData.main.feels_like && (
+                <p>
+                  Feels like{" "}
+                  <span className="data">
+                    {weatherData.main.feels_like.toFixed(1)} ˚F
+                  </span>
+                </p>
+              )}
+              {weatherData.main.humidity && (
+                <p>
+                  Humidity{" "}
+                  <span className="data">
+                    {weatherData.main.humidity.toFixed(0)}%
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+          {weatherData?.clouds?.all && (
+            <p className="clouds">
+              Cloudiness{" "}
+              <span className="data">{weatherData?.clouds?.all}%</span>
+            </p>
+          )}
+          {weatherData?.wind?.speed && (
+            <p className="wind">
+              Wind Speed:{" "}
+              <span className="data">
+                {weatherData?.wind?.speed.toFixed(0)} mph
+              </span>
+            </p>
+          )}
         </>
       )}
     </div>
@@ -301,7 +332,7 @@ function App() {
 
   // TODO: Fix HTML, add styles, reposition/fix map controls & map size.
   return (
-    <div className="App container-fluid">
+    <div className="App">
       <div className="header">
         <div className="layer-wrapper">
           <label htmlFor="displayTerrain">

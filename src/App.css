@@ -14,12 +14,8 @@
 .header {
   color: #cccccc;
   background-color: #333333;
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100vw;
-  height: 90px;
-  z-index: 1;
+  height: 10vh;
 }
 
 .location-input,
@@ -41,6 +37,13 @@
   text-align: right;
 }
 
+/* ---------------------------------------- */
+/* Map specific CSS */
+/* ---------------------------------------- */
+#map-wrapper {
+  height: 90vh !important;
+}
+
 .mapboxgl-popup-close-button {
   color: #333333;
 }
@@ -50,18 +53,40 @@
   outline: -webkit-focus-ring-color auto 1px;
 }
 
+/* Popup Content */
+.weather-wrapper {
+  text-align: left;
+}
+.weather-wrapper .description {
+  text-align: center;
+  margin-bottom: 1em;
+}
+.weather-wrapper p {
+  margin: 0;
+}
 .weather-wrapper .icon2x {
   width: 100px;
   height: 100px;
 }
+.weather-wrapper img,
 .weather-wrapper .icon {
+  display: block;
+  margin: 0 auto;
   width: 50px;
   height: 50px;
+}
+
+.weather-wrapper .loading {
+  padding: 1em;
+  padding-bottom: 0.5em;
 }
 
 .weather-wrapper .loading p {
   display: inline-block;
   padding-left: 10px;
+}
+.weather-wrapper .data {
+  font-weight: bold;
 }
 
 /* Loading Spinner */
