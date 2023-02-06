@@ -384,7 +384,9 @@ function App() {
         mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={mapboxAccessToken}
       >
+        {/* BUG: Header disappears when going into fullscreen mode, so disabling full screen map mode
         <FullscreenControl />
+        */}
         <NavigationControl />
         {marker.show && marker.position?.lng && marker.position?.lat && (
           <>
