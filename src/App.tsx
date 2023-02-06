@@ -92,10 +92,9 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
     useState<Partial<weatherDataType> | null>(null);
   const [weatherIcon, setWeatherIcon] = useState<string | undefined>();
 
-  // TODO: This is firing off TWO API calls.
+  // TODO: BUG 🐛 This is firing off TWO API calls.
   useEffect(() => {
     getWeatherAtLocation(longitude, latitude);
-    // console.log(`querying OpenWeather API @ ${latitude}, ${longitude}`);
     [];
   }, []);
 
@@ -110,7 +109,6 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
       })
       .then((response) => response.json())
       .then((weatherData: weatherDataType) => {
-        // console.log(weatherData);
         setWeatherData(weatherData);
 
         const icon = weatherData.weather[0]?.icon || null;
@@ -218,10 +216,8 @@ function App() {
   const [locationInputValue, setLocationInputValue] = useState<string>("");
 
   const inputToLngLat = (value: string): LngLat | null => {
-    // console.log(value);
     const lat: number = Number(value.split(",")[0].trim());
     const lng: number = Number(value.split(",")[1]?.trim());
-    // console.log(`Is valid LatLng? ${isValidLngLatValues(lng, lat)}`);
 
     return createLngLat(lng, lat);
   };
@@ -263,12 +259,10 @@ function App() {
 
     // If user input a valid coordinate, pan map and display marker
     if (lngLatValue) {
-      console.log("Valid coordinate. Displaying marker.");
       mapRef.current?.panTo(lngLatValue);
       setMarker({ position: lngLatValue, show: true });
     } else {
       // Remove marker since input is not a valid coordinate
-      // console.log("Invalid LatLng. Display text input warning.");
       setMarker({ ...marker, show: false });
     }
 
@@ -303,7 +297,7 @@ function App() {
         filter: [">=", ["get", "ele"], 3048],
       });
     mapRef.current?.on("moveend", () => {
-      // TODO: Fix when user closes popup with X and then pans the map, the popup reappears
+      // TODO: BUG 🐛 Fix when user closes popup with X and then pans the map, the popup reappears
       // Re-show popup when user is done panning the map
       setShowPopup(true);
     });
@@ -317,7 +311,6 @@ function App() {
       const lat: number = event.lngLat.lat;
       const lng: number = event.lngLat.lng;
       const location: string = coordinatesToLatLng(lat, lng);
-      console.log(`Clicked at ${location}`);
       setLocationInputValue(location);
       setMarker({
         position: {
@@ -347,7 +340,6 @@ function App() {
         </div>
         <div className="location-input">
           <label htmlFor="coordinates">Location:</label>
-          {/* Ensure that this input is a controlled component that, when changed, remove the marker & popup until Enter or (new) submit Button is pressed */}
           <input
             autoFocus
             type="text"
@@ -384,7 +376,7 @@ function App() {
         mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={mapboxAccessToken}
       >
-        {/* BUG: Header disappears when going into fullscreen mode, so disabling full screen map mode
+        {/* TODO: BUG 🐛 Header disappears when going into fullscreen mode, so disabling full screen map mode
         <FullscreenControl />
         */}
         <NavigationControl />
@@ -403,13 +395,10 @@ function App() {
                 anchor="top"
                 focusAfterOpen={false}
                 offset={5}
-                onClose={() => {
-                  setShowPopup(false);
-                  // console.log("popup close");
-                }}
+                onClose={() => setShowPopup(false)}
                 // onOpen={() => console.log("popup open")}
               >
-                {/* TODO: Solve the re-rendering issue firing off another API call when map is panned and popup is reshown. */}
+                {/* TODO: BUG 🐛 Solve the re-rendering issue firing off another API call when map is panned and popup is reshown. */}
                 <WeatherDisplay
                   latitude={marker.position.lat.toFixed(4)}
                   longitude={marker.position.lng.toFixed(4)}
