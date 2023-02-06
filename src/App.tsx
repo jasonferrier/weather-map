@@ -1,6 +1,5 @@
-import { useCallback, useState, useRef, ChangeEvent, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import Map, {
-  FullscreenControl,
   LngLat,
   MapRef,
   Marker,
@@ -8,184 +7,20 @@ import Map, {
   Popup,
   ViewState,
 } from "react-map-gl";
-import mapboxgl from "mapbox-gl";
+import {
+  createLngLat,
+  latLngToLocationString,
+  locationTextToLngLat,
+} from "./utils";
+import type { WeatherMarker as MarkerType } from "./Map";
 import "./App.css";
-import "mapbox-gl/dist/mapbox-gl.css";
+import "./map.css"; // TODO: Remove this once Map component is created
+import "mapbox-gl/dist/mapbox-gl.css"; // TODO: Remove this once Map component is created
+import Header from "./Header";
+// import Map from "./Map";
+import WeatherDisplay from "./WeatherDisplay";
 
 const mapboxAccessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-// OpenWeather API Endpoint:
-// https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}
-const openWeatherAPIKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
-
-type Marker = {
-  position: Partial<LngLat> | null;
-  show: boolean;
-};
-
-// TODO: ¿¿ Should I use this package: https://www.npmjs.com/package/openweathermap-ts ??
-// NOTE FROM OPENWEATHER API DOCUMENTATION:
-//    If you do not see some of the parameters in your API response it means that these
-//    weather phenomena are just not happened for the time of measurement for the city
-//    or location chosen. Only really measured or calculated data is displayed in API response.
-type weatherDataType = {
-  coord: {
-    lon: number; // City geo location, longitude
-    lat: number; // City geo location, latitude
-  };
-  weather: {
-    id: number; // Weather condition id
-    main: string; // Group of weather parameters (Rain, Snow, Extreme etc.)
-    description: string; // Weather condition within the group. You can get the output in your language. [Learn more](https://openweathermap.org/current#multi)
-    icon: string;
-  }[];
-  base: string; // **Internal parameter**
-  main: {
-    temp: number; // Temperature. Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
-    feels_like: number; // Temperature. This temperature parameter accounts for the human perception of weather. Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
-    temp_min: number; // Minimum temperature at the moment. This is minimal currently observed temperature (within large megalopolises and urban areas). Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
-    temp_max: number; // Maximum temperature at the moment. This is maximal currently observed temperature (within large megalopolises and urban areas). Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
-    pressure: number; // Atmospheric pressure (on the sea level, if there is no sea_level or grnd_level data), hPa
-    humidity: number; // Humidity, %
-    sea_level: number; // Atmospheric pressure on the sea level, hPa
-    grnd_level: number; // Atmospheric pressure on the ground level, hPa
-  };
-  visibility: number; // Visibility, meter. The maximum value of the visibility is 10km
-  wind: {
-    speed: number; // Wind speed. Unit Default: meter/sec, Metric: meter/sec, Imperial: miles/hour.
-    deg: number; // Wind direction, degrees (meteorological)
-    gust: number; // Wind gust. Unit Default: meter/sec, Metric: meter/sec, Imperial: miles/hour
-  };
-  clouds: {
-    all: number; // Cloudiness, %
-  };
-  rain: {
-    "1h": number; // Rain volume for the last 1 hour, mm
-    "3h": number; // Rain volume for the last 3 hours, mm
-  };
-  snow: {
-    "1h": number; // Snow volume for the last 1 hour, mm
-    "3h": number; // Snow volume for the last 3 hours, mm
-  };
-  dt: number; // Time of data calculation, unix, UTC
-  sys: {
-    type: number; // **Internal parameter**
-    id: number; // **Internal parameter**
-    message: string; // **Internal parameter**
-    country: string; // Country code (GB, JP etc.)
-    sunrise: number; // Sunrise time, unix, UTC
-    sunset: number; // Sunset time, unix, UTC
-  };
-  timezone: number; // Shift in seconds from UTC
-  id: number; // City ID. Please note that built-in geocoder functionality has been deprecated.
-  name: string; // City name. Please note that built-in geocoder functionality has been deprecated. Learn more
-  cod: number; // **Internal parameter**
-};
-
-type WeatherDisplayProps = {
-  latitude: string;
-  longitude: string;
-};
-
-const WeatherDisplay: React.FC<WeatherDisplayProps> = (props) => {
-  const { latitude, longitude } = props;
-  const [weatherData, setWeatherData] =
-    useState<Partial<weatherDataType> | null>(null);
-  const [weatherIcon, setWeatherIcon] = useState<string | undefined>();
-
-  // TODO: BUG 🐛 This is firing off TWO API calls.
-  useEffect(() => {
-    getWeatherAtLocation(longitude, latitude);
-    [];
-  }, []);
-
-  const getWeatherAtLocation = (lng: string, lat: string) => {
-    const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${openWeatherAPIKey}&units=imperial`;
-    fetch(weatherApiUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response;
-      })
-      .then((response) => response.json())
-      .then((weatherData: weatherDataType) => {
-        setWeatherData(weatherData);
-
-        const icon = weatherData.weather[0]?.icon || null;
-        if (icon) {
-          // setWeatherIcon(`http://openweathermap.org/img/wn/${icon}@2x.png`); // "Retina"
-          setWeatherIcon(`http://openweathermap.org/img/wn/${icon}.png`);
-        } else {
-          // setWeatherIcon("./public/question-mark@2x.png"); // "Retina"
-          setWeatherIcon("./public/question-mark.png");
-        }
-      });
-  };
-
-  return (
-    <div className="weather-wrapper">
-      {!weatherData && (
-        <div className="loading">
-          <div className="lds-ring">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-          <p>Loading weather data</p>
-        </div>
-      )}
-      {weatherData && (
-        <>
-          <img src={weatherIcon} />
-          {weatherData.weather && weatherData.weather[0].description && (
-            <p className="description">{weatherData.weather[0].description}</p>
-          )}
-          {weatherData?.main?.temp && (
-            <div className="temperature">
-              <p>
-                Actual{" "}
-                <span className="data">
-                  {weatherData.main.temp.toFixed(1)} ˚F
-                </span>
-              </p>
-              {weatherData.main.feels_like && (
-                <p>
-                  Feels like{" "}
-                  <span className="data">
-                    {weatherData.main.feels_like.toFixed(1)} ˚F
-                  </span>
-                </p>
-              )}
-              {weatherData.main.humidity && (
-                <p>
-                  Humidity{" "}
-                  <span className="data">
-                    {weatherData.main.humidity.toFixed(0)}%
-                  </span>
-                </p>
-              )}
-            </div>
-          )}
-          {weatherData?.clouds?.all && (
-            <p className="clouds">
-              Cloudiness{" "}
-              <span className="data">{weatherData?.clouds?.all}%</span>
-            </p>
-          )}
-          {weatherData?.wind?.speed && (
-            <p className="wind">
-              Wind Speed:{" "}
-              <span className="data">
-                {weatherData?.wind?.speed.toFixed(0)} mph
-              </span>
-            </p>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
 
 function App() {
   // Prevent the map from reloading when the user interacts with the map
@@ -193,8 +28,8 @@ function App() {
 
   const [viewState, setViewState] = useState<ViewState>({
     // FEATURE: Use browser geolocation to center map? Fallback coordinates if can not retrieve or no permissions.
-    longitude: -109.8857,
-    latitude: 38.1893,
+    longitude: -105.045,
+    latitude: 38.839,
     zoom: 10,
     bearing: 0,
     pitch: 0,
@@ -206,39 +41,22 @@ function App() {
     },
   });
 
+  const [locationInputValue, setLocationInputValue] = useState<string>("");
   const [showPopup, setShowPopup] = useState<boolean>(false);
 
-  const [marker, setMarker] = useState<Marker>({
+  const [weatherMarker, setWeatherMarker] = useState<MarkerType>({
     position: null,
     show: false,
   });
 
-  const [locationInputValue, setLocationInputValue] = useState<string>("");
-
-  const inputToLngLat = (value: string): LngLat | null => {
-    const lat: number = Number(value.split(",")[0].trim());
-    const lng: number = Number(value.split(",")[1]?.trim());
-
-    return createLngLat(lng, lat);
-  };
-
-  const coordinatesToLatLng = (lat: number, lng: number): string => {
-    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-  };
-
-  const createLngLat = (lng: number, lat: number): LngLat | null => {
-    try {
-      return new mapboxgl.LngLat(lng, lat);
-    } catch (error) {
-      return null;
-    }
-  };
-
   const [displayTerrainLayer, setDisplayTerrainLayer] =
     useState<boolean>(false);
-  const handleDisplayTerrain = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleToggleDisplayContours = () => {
     setDisplayTerrainLayer(!displayTerrainLayer);
-    if (!displayTerrainLayer) {
+  };
+
+  useEffect(() => {
+    if (displayTerrainLayer) {
       mapRef.current
         ?.getMap()
         .setLayoutProperty("contours", "visibility", "visible");
@@ -247,28 +65,7 @@ function App() {
         ?.getMap()
         .setLayoutProperty("contours", "visibility", "none");
     }
-  };
-
-  const handleLocationInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    // update input state
-    setLocationInputValue(e.target.value);
-
-    // Check if valid "latitude, longitude" || "latitude,longitude"
-    // Create LngLat from input || null if invalid
-    const lngLatValue = inputToLngLat(e.target.value);
-
-    // If user input a valid coordinate, pan map and display marker
-    if (lngLatValue) {
-      mapRef.current?.panTo(lngLatValue);
-      setMarker({ position: lngLatValue, show: true });
-    } else {
-      // Remove marker since input is not a valid coordinate
-      setMarker({ ...marker, show: false });
-    }
-
-    // TODO: Once the user finishes typing and hits the enter button (pending adding to DOM)
-    //  setMarker new position and display, show popup, perform weather API query.
-  };
+  }, [displayTerrainLayer]);
 
   const onMapLoad = useCallback(() => {
     // Add topo lines to map
@@ -297,7 +94,8 @@ function App() {
         filter: [">=", ["get", "ele"], 3048],
       });
     mapRef.current?.on("moveend", () => {
-      // TODO: BUG 🐛 Fix when user closes popup with X and then pans the map, the popup reappears
+      // TODO: FEATURE: If marker location is outside the map bounds, remove marker and popup
+
       // Re-show popup when user is done panning the map
       setShowPopup(true);
     });
@@ -310,62 +108,59 @@ function App() {
     mapRef.current?.on("click", (event) => {
       const lat: number = event.lngLat.lat;
       const lng: number = event.lngLat.lng;
-      const location: string = coordinatesToLatLng(lat, lng);
-      setLocationInputValue(location);
-      setMarker({
-        position: {
-          lat: lat,
-          lng: lng,
-        },
-        show: true,
-      });
-      setShowPopup(true);
+      addMarkerFromMapClick(lng, lat);
     });
   }, []);
 
-  // TODO: Fix HTML, add styles, reposition/fix map controls & map size.
+  const handleUserLocationChange = () => {
+    const lngLat = locationTextToLngLat(locationInputValue);
+    if (lngLat) {
+      addMarker(lngLat.lng, lngLat.lat);
+    } else {
+      removeMarker();
+    }
+  };
+
+  const addMarkerFromMapClick = (lng: number, lat: number) => {
+    const location: string = latLngToLocationString(lat, lng);
+    setLocationInputValue(location);
+    addMarker(lng, lat);
+  };
+
+  const addMarker = (lng: number, lat: number) => {
+    const lngLat: LngLat | null = createLngLat(lng, lat);
+    const location: string = latLngToLocationString(lat, lng);
+    setWeatherMarker({
+      position: {
+        lat: lat,
+        lng: lng,
+      },
+      show: true,
+    });
+    setShowPopup(true);
+    lngLat && mapRef.current?.getMap().panTo(lngLat);
+    // TODO: BUG 🐛: The popup contents are not refreshed to the current location weather
+  };
+
+  const removeMarker = () => {
+    setWeatherMarker({ position: null, show: false });
+  };
+
   return (
     <div className="App">
-      <div className="header">
-        <div className="layer-wrapper">
-          <label htmlFor="displayTerrain">
-            Display topo above 10,000 feet?
-          </label>
-          <input
-            type="checkbox"
-            id="displayTerrain"
-            name="displayTerrain"
-            onChange={handleDisplayTerrain}
-          />
-        </div>
-        <div className="location-input">
-          <label htmlFor="coordinates">Location:</label>
-          <input
-            autoFocus
-            type="text"
-            id="coordinates"
-            name="coordinates"
-            value={locationInputValue}
-            onChange={handleLocationInputChange}
-            placeholder={coordinatesToLatLng(
-              viewState.latitude,
-              viewState.longitude
-            )}
-          />
-          <span
-            className="warning"
-            style={{
-              display: inputToLngLat(locationInputValue) ? "none" : "inline",
-            }}
-          >
-            Please enter a valid decimal coordinate as "latitude, longitude".
-          </span>
-        </div>
-        <div className="map-location">
-          Current map center: {viewState.latitude.toFixed(4)},{" "}
-          {viewState.longitude.toFixed(4)} | Zoom: {viewState.zoom.toFixed(3)}
-        </div>
-      </div>
+      <Header
+        location={locationInputValue}
+        isValidLocation={
+          locationInputValue === "" ||
+          !!locationTextToLngLat(locationInputValue)
+        }
+        mapCenterLat={viewState.latitude}
+        mapCenterLng={viewState.longitude}
+        mapZoom={viewState.zoom}
+        handleInputChange={setLocationInputValue}
+        handleLocationSubmit={handleUserLocationChange}
+        handleToggleDisplayContours={handleToggleDisplayContours}
+      />
       <Map
         {...viewState}
         id="map-wrapper"
@@ -380,33 +175,38 @@ function App() {
         <FullscreenControl />
         */}
         <NavigationControl />
-        {marker.show && marker.position?.lng && marker.position?.lat && (
-          <>
-            <Marker
-              longitude={marker.position.lng}
-              latitude={marker.position.lat}
-              color="magenta"
-            />
-            {showPopup && (
-              <Popup
-                className="popup-container"
-                longitude={marker.position.lng}
-                latitude={marker.position.lat}
-                anchor="top"
-                focusAfterOpen={false}
-                offset={5}
-                onClose={() => setShowPopup(false)}
-                // onOpen={() => console.log("popup open")}
-              >
-                {/* TODO: BUG 🐛 Solve the re-rendering issue firing off another API call when map is panned and popup is reshown. */}
-                <WeatherDisplay
-                  latitude={marker.position.lat.toFixed(4)}
-                  longitude={marker.position.lng.toFixed(4)}
-                />
-              </Popup>
-            )}
-          </>
-        )}
+        {weatherMarker.show &&
+          weatherMarker.position?.lng &&
+          weatherMarker.position?.lat && (
+            <>
+              <Marker
+                longitude={weatherMarker.position.lng}
+                latitude={weatherMarker.position.lat}
+                color="magenta"
+              />
+              {showPopup && (
+                <Popup
+                  className="popup-container"
+                  longitude={weatherMarker.position.lng}
+                  latitude={weatherMarker.position.lat}
+                  // anchor="top"
+                  focusAfterOpen={false}
+                  offset={{ bottom: [0, -35] }}
+                  onClose={() => {
+                    setShowPopup(false);
+                    setWeatherMarker({ position: null, show: false });
+                  }}
+                  // onOpen={() => console.log("popup open")}
+                >
+                  {/* TODO: BUG 🐛 Solve the re-rendering issue firing off another API call when map is panned and popup is reshown. */}
+                  <WeatherDisplay
+                    latitude={weatherMarker.position.lat.toFixed(4)}
+                    longitude={weatherMarker.position.lng.toFixed(4)}
+                  />
+                </Popup>
+              )}
+            </>
+          )}
       </Map>
     </div>
   );

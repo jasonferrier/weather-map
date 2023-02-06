@@ -1,0 +1,36 @@
+.header {
+  color: #cccccc;
+  background-color: #333333;
+  width: 100vw;
+  height: 10vh;
+}
+
+.location-input,
+.map-location {
+  padding: 8px 12px;
+}
+.location-input {
+  text-align: left;
+}
+.location-input input {
+  margin-left: 0.5em;
+  padding: 0.5em;
+}
+.location-input input.warning {
+  outline: 1px solid #ff00ff;
+}
+
+.location-input .go-button {
+  margin-left: 0.5em;
+  font-size: 0.8em;
+}
+
+.location-input .warning-message {
+  color: #ff00ff;
+  font-size: 0.8em;
+  padding: 0 10px;
+}
+
+.map-location {
+  text-align: center;
+}
