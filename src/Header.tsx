@@ -44,18 +44,29 @@ const Header: React.FC<PropTypes> = (props) => {
 
   return (
     <div className="header">
-      {/* TODO: change this to flexbox */}
-      {/* <h1>Weather Map</h1>
+      <h1>Weather Map</h1>
       <div className="app-description">
         You can get the current weather for a location on the map by either
         clicking the map or entering the location manually.
-      </div> */}
+      </div>
       <div className="location-input">
-        <form onSubmit={handleFormSubmit}>
+        {showWarning && (
+          <p
+            className="warning-message"
+            style={{
+              display: locationTextToLngLat(location) ? "none" : "inline",
+            }}
+          >
+            Please enter a valid decimal coordinate as "latitude, longitude".
+          </p>
+        )}
+        <form
+          className={showWarning ? "warning" : ""}
+          onSubmit={handleFormSubmit}
+        >
           <label htmlFor="coordinates">Location:</label>
           <input
             autoFocus
-            className={showWarning ? "warning" : ""}
             type="text"
             id="coordinates"
             name="coordinates"
@@ -74,16 +85,6 @@ const Header: React.FC<PropTypes> = (props) => {
           >
             Go
           </button>
-          {showWarning && (
-            <span
-              className="warning-message"
-              style={{
-                display: locationTextToLngLat(location) ? "none" : "inline",
-              }}
-            >
-              Please enter a valid decimal coordinate as "latitude, longitude".
-            </span>
-          )}
         </form>
       </div>
       <div className="layer-wrapper">

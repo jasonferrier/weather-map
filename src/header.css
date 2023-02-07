@@ -2,21 +2,29 @@
   color: #cccccc;
   background-color: #333333;
   width: 100vw;
-  height: 10vh;
+}
+
+.header h1 {
+  font-size: 2em;
+  line-height: 1;
+  margin: 5px auto;
 }
 
 .location-input,
 .map-location {
   padding: 8px 12px;
 }
-.location-input {
-  text-align: left;
+.location-input form {
+  margin-top: 20px;
+}
+.location-input form.warning {
+  margin-top: 0;
 }
 .location-input input {
   margin-left: 0.5em;
   padding: 0.5em;
 }
-.location-input input.warning {
+.location-input .warning input {
   outline: 1px solid #ff00ff;
 }
 
@@ -26,9 +34,11 @@
 }
 
 .location-input .warning-message {
+  display: block;
   color: #ff00ff;
   font-size: 0.8em;
   padding: 0 10px;
+  height: 20px;
 }
 
 .map-location {

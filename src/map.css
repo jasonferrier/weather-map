@@ -2,7 +2,7 @@
 /* Map specific CSS */
 /* ---------------------------------------- */
 #map-wrapper {
-  height: 90vh !important;
+  flex-grow: 1;
 }
 
 .mapboxgl-popup-close-button {
