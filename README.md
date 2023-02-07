@@ -4,7 +4,9 @@ This project will allow the user to see the current weather at a point they have
 
 # Browser support
 
-**NOTE** Internet Explorer 11 is not supported due to the use of the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). That and it reached end of life support from Microsoft in June 2022.
+Modern browsers that support WebGL are supported. For more information, visit the [Mapbox documentation](https://docs.mapbox.com/help/troubleshooting/mapbox-browser-support/) to ensure your browser meets the requirements for Mapbox GL JS.
+
+**NOTE** Internet Explorer 11 is not supported due to the use of Mapbox GL JS v2 as well as the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). That and it reached end of life support from Microsoft in June 2022.
 
 # How to launch Application
 
