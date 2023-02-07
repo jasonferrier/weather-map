@@ -1,18 +1,19 @@
+import { useEffect, useState } from "react";
 import { latLngToLocationString, locationTextToLngLat } from "./utils";
 import "./header.css";
 
-type HeaderProps = {
+type PropTypes = {
   location: string;
   isValidLocation: boolean;
-  mapCenterLat: number;
-  mapCenterLng: number;
-  mapZoom: number;
+  mapCenterLat: number | undefined;
+  mapCenterLng: number | undefined;
+  mapZoom: number | undefined;
   handleInputChange: Function;
   handleLocationSubmit: Function;
   handleToggleDisplayContours: Function;
 };
 
-const Header: React.FC<HeaderProps> = (props) => {
+const Header: React.FC<PropTypes> = (props) => {
   const {
     location,
     isValidLocation,
@@ -24,6 +25,8 @@ const Header: React.FC<HeaderProps> = (props) => {
     handleToggleDisplayContours,
   } = props;
 
+  const [showWarning, setShowWarning] = useState<boolean>(false);
+
   const handleLocationInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -34,6 +37,10 @@ const Header: React.FC<HeaderProps> = (props) => {
     e.preventDefault();
     handleLocationSubmit();
   };
+
+  useEffect(() => {
+    setShowWarning(!(isValidLocation || location === ""));
+  }, [location, isValidLocation]);
 
   return (
     <div className="header">
@@ -48,13 +55,17 @@ const Header: React.FC<HeaderProps> = (props) => {
           <label htmlFor="coordinates">Location:</label>
           <input
             autoFocus
-            className={isValidLocation ? "" : "warning"}
+            className={showWarning ? "warning" : ""}
             type="text"
             id="coordinates"
             name="coordinates"
             value={location}
             onChange={handleLocationInputChange}
-            placeholder={latLngToLocationString(mapCenterLat, mapCenterLng)}
+            placeholder={
+              mapCenterLat && mapCenterLng
+                ? latLngToLocationString(mapCenterLat, mapCenterLng)
+                : ""
+            }
           />
           <button
             className="go-button"
@@ -63,7 +74,7 @@ const Header: React.FC<HeaderProps> = (props) => {
           >
             Go
           </button>
-          {!isValidLocation && (
+          {showWarning && (
             <span
               className="warning-message"
               style={{
@@ -85,8 +96,9 @@ const Header: React.FC<HeaderProps> = (props) => {
         <label htmlFor="displayTerrain">Display topo above 10,000 feet</label>
       </div>
       <div className="map-location">
-        Current map center: {mapCenterLat.toFixed(4)}, {mapCenterLng.toFixed(4)}{" "}
-        | Zoom: {mapZoom.toFixed(3)}
+        Current map center: {mapCenterLat ? mapCenterLat.toFixed(4) : "N/A"} ,{" "}
+        {mapCenterLng ? mapCenterLng.toFixed(4) : "N/A"} | Zoom:{" "}
+        {mapZoom ? mapZoom.toFixed(3) : "N/A"}
       </div>
     </div>
   );
