@@ -1,6 +1,6 @@
 # Weather Map
 
-This project will allow the user to see the current weather at a point they have clicked on the map.
+This project will allow the user to see the current weather at a point specified as well as toggle the display of elevation contours above 10,000 feet.
 
 # Browser support
 

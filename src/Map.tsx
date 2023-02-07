@@ -156,7 +156,7 @@ const Map: React.FC<PropTypes> = (props) => {
           "line-width": 1,
         },
         // Only display contours above 3048m // 10,000ft
-        filter: [">=", ["get", "ele"], 3048],
+        filter: [">", ["get", "ele"], 3048],
       });
     mapRef.current?.on("move", () => {
       handleChangeMapCenter({
